@@ -1,4 +1,3 @@
-
 globals = {
 	"replacer",
 }
@@ -8,14 +7,16 @@ read_globals = {
 	string = {fields = {"split"}},
 	table = {fields = {"copy", "getn"}},
 
-	-- Minetest
+	-- Luanti
+	"core", "minetest",
 	"vector", "ItemStack",
 	"dump", "VoxelArea",
 
 	-- deps
 	"technic",
 	"default",
-	"minetest",
 	"creative",
-	"circular_saw"
+	"circular_saw",
+	"dye",
+	"colormachine",
 }

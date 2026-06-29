@@ -48,7 +48,7 @@
 --			* receipe changed
 --			* inventory image added
 
-local path = minetest.get_modpath("replacer")
+local path = core.get_modpath("replacer")
 
 replacer = {}
 
@@ -73,20 +73,20 @@ replacer.blacklist["protector:protect2"] = true
 replacer.max_charge = 30000
 replacer.charge_per_node = 15
 -- node count limit
-replacer.max_nodes = tonumber(minetest.settings:get("replacer.max_nodes") or 3168)
+replacer.max_nodes = tonumber(core.settings:get("replacer.max_nodes") or 3168)
 
 -- select which recipes to hide (not all combinations make sense)
 replacer.hide_recipe_basic =
-	minetest.settings:get_bool('replacer.hide_recipe_basic') or false
+  core.settings:get_bool('replacer.hide_recipe_basic') or false
 replacer.hide_recipe_technic_upgrade =
-	minetest.settings:get_bool('replacer.hide_recipe_technic_upgrade') or false
+	core.settings:get_bool('replacer.hide_recipe_technic_upgrade') or false
 replacer.hide_recipe_technic_direct =
-	minetest.settings:get_bool('replacer.hide_recipe_technic_direct')
+	core.settings:get_bool('replacer.hide_recipe_technic_direct')
 if nil == replacer.hide_recipe_technic_direct then
 	replacer.hide_recipe_technic_direct = true
 end
 
-replacer.has_technic_mod = minetest.get_modpath('technic')
+replacer.has_technic_mod = core.get_modpath('technic')
 
 -- adds a tool for inspecting nodes and entities
 dofile(path .. "/inspect.lua")

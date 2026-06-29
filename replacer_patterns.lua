@@ -1,8 +1,8 @@
 replacer.patterns = {}
 local rp = replacer.patterns
-local poshash = minetest.hash_node_position
+local poshash = core.hash_node_position
 
--- cache results of minetest.get_node
+-- cache results of core.get_node
 replacer.patterns.known_nodes = {}
 function replacer.patterns.get_node(pos)
 	local i = poshash(pos)
@@ -10,14 +10,14 @@ function replacer.patterns.get_node(pos)
 	if nil ~= node then
 		return node
 	end
-	node = minetest.get_node(pos)
+	node = core.get_node(pos)
 	rp.known_nodes[i] = node
 	return node
 end
 
 -- tests if there's a node at pos which should be replaced
 function replacer.patterns.replaceable(pos, name, pname)
-	return (rp.get_node(pos).name == name) and (not minetest.is_protected(pos, pname))
+	return (rp.get_node(pos).name == name) and (not core.is_protected(pos, pname))
 end
 
 replacer.patterns.translucent_nodes = {}
@@ -26,7 +26,7 @@ function replacer.patterns.node_translucent(name)
 	if nil ~= is_translucent then
 		return is_translucent
 	end
-	local data = minetest.registered_nodes[name]
+	local data = core.registered_nodes[name]
 	if data and ((not data.drawtype) or ("normal" == data.drawtype)) then
 		rp.translucent_nodes[name] = false
 		return false
@@ -104,8 +104,8 @@ function replacer.patterns.reduce_crust_ps(data)
 	local p, p2
 	for i = 1, data.num do
 		p = data.ps[i]
-		for i = 1, 6 do
-			p2 = rp.offsets_touch[i]
+		for i2 = 1, 6 do
+			p2 = rp.offsets_touch[i2]
 			if data.aboves[poshash(vector.add(p, p2))] then
 				n = n + 1
 				newps[n] = p
@@ -125,8 +125,8 @@ function replacer.patterns.reduce_crust_above_ps(data)
 	for i = 1, data.num do
 		p = data.ps[i]
 		if rp.replaceable(p, "air", data.pname) then
-			for i = 1, 6 do
-				p2 = rp.offsets_touch[i]
+			for i2 = 1, 6 do
+				p2 = rp.offsets_touch[i2]
 				if rp.replaceable(vector.add(p, p2), data.name, data.pname) then
 					n = n + 1
 					newps[n] = p

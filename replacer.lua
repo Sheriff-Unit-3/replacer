@@ -7,8 +7,8 @@ local rb = replacer.blabla
 local rp = replacer.patterns
 
 function replacer.inform(name, msg)
-	minetest.chat_send_player(name, msg)
-	minetest.log("info", rb.log:format(name, msg))
+	core.chat_send_player(name, msg)
+	core.log("info", rb.log:format(name, msg))
 end
 
 replacer.modes = { "single", "field", "crust", "chunkborder" }
@@ -44,15 +44,15 @@ function replacer.register_limit(node_name, node_max)
 	-- add to blacklist if limit is zero
 	if 0 == node_max then
 		replacer.blacklist[node_name] = true
-		minetest.log("info", rb.blacklist_insert:format(node_name))
+		core.log("info", rb.blacklist_insert:format(node_name))
 		return
 	end
 	-- log info if already limited
 	if nil ~= r.limit_list[node_name] then
-		minetest.log("info", rb.limit_override:format(node_name, r.limit_list[node_name]))
+		core.log("info", rb.limit_override:format(node_name, r.limit_list[node_name]))
 	end
 	r.limit_list[node_name] = node_max
-	minetest.log("info", rb.limit_insert:format(node_name, node_max))
+	core.log("info", rb.limit_insert:format(node_name, node_max))
 end
 
 function replacer.get_data(stack)
@@ -85,7 +85,7 @@ end
 if replacer.has_technic_mod then
 	-- technic still stores data serialized, so this is the nearest we get to current standard
 	function replacer.get_charge(itemstack)
-		local meta = minetest.deserialize(itemstack:get_meta():get_string(''))
+		local meta = core.deserialize(itemstack:get_meta():get_string(''))
 		if (not meta) or (not meta.charge) then
 			return 0
 		end
@@ -95,12 +95,12 @@ if replacer.has_technic_mod then
 	function replacer.set_charge(itemstack, charge, max)
 		technic.set_RE_wear(itemstack, charge, max)
 		local metaRef = itemstack:get_meta()
-		local meta = minetest.deserialize(metaRef:get_string(''))
+		local meta = core.deserialize(metaRef:get_string(''))
 		if (not meta) or (not meta.charge) then
 			meta = { charge = 0 }
 		end
 		meta.charge = charge
-		metaRef:set_string('', minetest.serialize(meta))
+		metaRef:set_string('', core.serialize(meta))
 	end
 end
 
@@ -142,8 +142,8 @@ end -- get_form_modes
 
 -- replaces one node with another one and returns if it was successful
 function replacer.replace_single_node(pos, node, nnd, player, name, inv, creative)
-	if minetest.is_protected(pos, name) then
-		return false, rb.protected_at:format(minetest.pos_to_string(pos))
+	if core.is_protected(pos, name) then
+		return false, rb.protected_at:format(core.pos_to_string(pos))
 	end
 
 	if replacer.blacklist[node.name] then
@@ -154,7 +154,7 @@ function replacer.replace_single_node(pos, node, nnd, player, name, inv, creativ
 	if node.name == nnd.name then
 		-- only the orientation was changed
 		if (node.param1 ~= nnd.param1) or (node.param2 ~= nnd.param2) then
-			minetest.swap_node(pos, nnd)
+			core.swap_node(pos, nnd)
 		end
 		return true
 	end
@@ -164,11 +164,11 @@ function replacer.replace_single_node(pos, node, nnd, player, name, inv, creativ
 		return false, rb.run_out:format(nnd.name or "?")
 	end
 
-	local ndef = minetest.registered_nodes[node.name]
+	local ndef = core.registered_nodes[node.name]
 	if not ndef then
 		return false, rb.attempt_unknown_replace:format(node.name)
 	end
-	local new_ndef = minetest.registered_nodes[nnd.name]
+	local new_ndef = core.registered_nodes[nnd.name]
 	if not new_ndef then
 		return false, rb.attempt_unknown_place:format(nnd.name)
 	end
@@ -178,9 +178,9 @@ function replacer.replace_single_node(pos, node, nnd, player, name, inv, creativ
 		-- give the player the item by simulating digging if possible
 		ndef.on_dig(pos, node, player)
 		-- test if digging worked
-		local dug_node = minetest.get_node_or_nil(pos)
+		local dug_node = core.get_node_or_nil(pos)
 		if (not dug_node) or
-			(not minetest.registered_nodes[dug_node.name].buildable_to) then
+			(not core.registered_nodes[dug_node.name].buildable_to) then
 			return false, rb.can_not_dig:format(node.name)
 		end
 	end
@@ -204,7 +204,7 @@ function replacer.replace_single_node(pos, node, nnd, player, name, inv, creativ
 	end
 
 	-- test whether the placed node differs from the supposed node
-	local placed_node = minetest.get_node(pos)
+	local placed_node = core.get_node(pos)
 	if placed_node.name ~= nnd.name then
 		-- Sometimes placing doesn't put the node but does something different
 		-- e.g. when placing snow on snow with the snow mod
@@ -214,7 +214,7 @@ function replacer.replace_single_node(pos, node, nnd, player, name, inv, creativ
 	-- fix orientation if needed
 	if placed_node.param1 ~= nnd.param1
 	or placed_node.param2 ~= nnd.param2 then
-		minetest.swap_node(pos, nnd)
+		core.swap_node(pos, nnd)
 	end
 
 	return true
@@ -225,21 +225,21 @@ function replacer.replace(itemstack, user, pt, right_clicked)
 	if (not user) or (not pt) then
 		return
 	end
-	
+
 	local keys = user:get_player_control()
 	local name = user:get_player_name()
 	local creative_enabled = creative.is_enabled_for(name)
-	local has_give = minetest.check_player_privs(name, "give")
+	local has_give = core.check_player_privs(name, "give")
 	local is_technic = itemstack:get_name() == replacer.tool_name_technic
 	local modes_are_available = is_technic or has_give or creative_enabled
-	
+
 	-- is special-key held? (aka fast-key)
 	if keys.aux1 then
 		if not modes_are_available then return itemstack end
 		-- fetch current mode
 		local _, mode = r.get_data(itemstack)
 		-- Show formspec to choose mode
-		minetest.show_formspec(name, r.form_name_modes, r.get_form_modes(mode))
+		core.show_formspec(name, r.form_name_modes, r.get_form_modes(mode))
 		-- return unchanged tool
 		return itemstack
 	end
@@ -249,8 +249,8 @@ function replacer.replace(itemstack, user, pt, right_clicked)
 		return
 	end
 
-	local pos = minetest.get_pointed_thing_position(pt, right_clicked)
-	local node_toreplace = minetest.get_node_or_nil(pos)
+	local pos = core.get_pointed_thing_position(pt, right_clicked)
+	local node_toreplace = core.get_node_or_nil(pos)
 
 	if not node_toreplace then
 		r.inform(name, rb.wait_for_load)
@@ -266,14 +266,14 @@ function replacer.replace(itemstack, user, pt, right_clicked)
 	end
 
 	if replacer.blacklist[nnd.name] then
-		minetest.chat_send_player(name, rb.blacklisted:format(nnd.name))
+		core.chat_send_player(name, rb.blacklisted:format(nnd.name))
 		return
 	end
 
 	if not modes_are_available then
 		mode = r.modes[1]
 	end
-	
+
 	if r.modes[1] == mode then
 		-- single
 		local succ, err = replacer.replace_single_node(pos, node_toreplace, nnd, user,
@@ -379,7 +379,7 @@ function replacer.replace(itemstack, user, pt, right_clicked)
 	local inv = user:get_inventory()
 	for i = 1, num do
 		local pos = ps[i]
-		local succ, err = r.replace_single_node(pos, minetest.get_node(pos), nnd,
+		local succ, err = r.replace_single_node(pos, core.get_node(pos), nnd,
 			user, name, inv, creative_enabled)
 		if not succ then
 			r.inform(name, err)
@@ -415,7 +415,7 @@ function replacer.common_on_place(itemstack, placer, pt)
 	local keys = placer:get_player_control()
 	local name = placer:get_player_name()
 	local creative_enabled = creative.is_enabled_for(name)
-	local has_give = minetest.check_player_privs(name, "give")
+	local has_give = core.check_player_privs(name, "give")
 	local is_technic = itemstack:get_name() == replacer.tool_name_technic
 	local modes_are_available = is_technic or has_give or creative_enabled
 
@@ -447,8 +447,8 @@ function replacer.common_on_place(itemstack, placer, pt)
 	end
 
 	local node, mode = r.get_data(itemstack)
-	node = minetest.get_node_or_nil(pt.under) or node
-	
+	node = core.get_node_or_nil(pt.under) or node
+
 	if not modes_are_available then
 		mode = r.modes[1]
 	end
@@ -458,15 +458,15 @@ function replacer.common_on_place(itemstack, placer, pt)
 		and (not inv:contains_item("main", node.name)) then
 		-- not in inv and not (creative and give)
 		local found_item = false
-		local drops = minetest.get_node_drops(node.name)
+		local drops = core.get_node_drops(node.name)
 		if creative_enabled then
-			if minetest.get_item_group(node.name,
+			if core.get_item_group(node.name,
 					"not_in_creative_inventory") > 0 then
 				-- search for a drop available in creative inventory
 				for i = 1, #drops do
 					local name = drops[i]
-					if minetest.registered_nodes[name]
-					and minetest.get_item_group(name,
+					if core.registered_nodes[name]
+					and core.get_item_group(name,
 							"not_in_creative_inventory") == 0 then
 						node.name = name
 						found_item = true
@@ -482,7 +482,7 @@ function replacer.common_on_place(itemstack, placer, pt)
 			-- search for a drop that the player has if possible
 			for i = 1, #drops do
 				local name = drops[i]
-				if minetest.registered_nodes[name]
+				if core.registered_nodes[name]
 				and inv:contains_item("main", name) then
 					node.name = name
 					found_item = true
@@ -495,8 +495,8 @@ function replacer.common_on_place(itemstack, placer, pt)
 				-- then digging the nodes works
 				for i = 1, #drops do
 					local name = drops[i]
-					if minetest.registered_nodes[name]
-					and minetest.get_item_group(name,
+					if core.registered_nodes[name]
+					and core.get_item_group(name,
 							"not_in_creative_inventory") == 0 then
 						node.name = name
 						found_item = true
@@ -532,7 +532,7 @@ function replacer.tool_def_basic()
 	}
 end
 
-minetest.register_tool(replacer.tool_name_basic, replacer.tool_def_basic())
+core.register_tool(replacer.tool_name_basic, replacer.tool_def_basic())
 
 if replacer.has_technic_mod then
 	function replacer.tool_def_technic()
@@ -543,7 +543,7 @@ if replacer.has_technic_mod then
 		return def
 	end
 	technic.register_power_tool(replacer.tool_name_technic, replacer.max_charge)
-	minetest.register_tool(replacer.tool_name_technic, replacer.tool_def_technic())
+	core.register_tool(replacer.tool_name_technic, replacer.tool_def_technic())
 end
 
 function replacer.register_on_player_receive_fields(player, form_name, fields)
@@ -556,7 +556,7 @@ function replacer.register_on_player_receive_fields(player, form_name, fields)
 	local itemstack = player:get_wielded_item()
 	local node, _ = r.get_data(itemstack)
 	local mode = fields.mode
-	local name = player:get_player_name()
+	-- local name = player:get_player_name()
 
 	-- set metadata and itemstring
 	r.set_data(itemstack, node, mode)
@@ -569,5 +569,5 @@ function replacer.register_on_player_receive_fields(player, form_name, fields)
 	--]]
 end
 -- listen to submitted fields
-minetest.register_on_player_receive_fields(replacer.register_on_player_receive_fields)
+core.register_on_player_receive_fields(replacer.register_on_player_receive_fields)
 

@@ -1,10 +1,13 @@
+# Replacer
+
 Replacement tool for creative building (Mod for Minetest)
 
 This tool is helpful for creative purposes (i.e. build a wall and "paint" windows into it).
 It replaces nodes with a previously selected other type of node (i.e. places said windows
 into a brick wall).
 
-# Crafting
+## Crafting
+
 Availability of recipes can be configured with server settings.
 Basic replacer:
 ```
@@ -30,7 +33,7 @@ Technic replacer directly crafted:
 ```
 Or `/giveme replacer:replacer_technic`
 
-# Usage
+## Usage
 
 Sneak-right-click on a node of which type you want to replace other nodes with.
        Left-click (normal usage) on any nodes you want to replace with that type.
@@ -44,12 +47,12 @@ In return, the replacement node will be taken from your inventory.
 If technic mod is installed, modes are available and use depletes charge.
 This is true for users without "give" privs and also on servers not running in creative mode.
 
-# Modes
+## Modes
 
 Special-right-click on a node or special-left-click anywhere to change the mode.
 Single-mode does not need any charge. The other modes do.
 
-# Inspection tool
+## Inspection tool
 
 The third tool included in this mod is the inspector.
 
@@ -61,15 +64,15 @@ Crafting:
 ```
 Just wield it and click on any node or entity you want to know more about. A limited craft-guide is included.
 
-# Settings
+## Settings
 
 * **replacer.max_nodes** max allowed nodes to replace (default: 3168)
-* **replacer.hide_recipe_basic** hide the basic recipe (default: 0)<br>
+* **replacer.hide_recipe_basic** hide the basic recipe (default: 0)
 These two require technic to be installed, if not they are hidden no matter how you set them
 * **replacer.hide_recipe_technic_upgrade** hide the upgrade recipe (default: 0)
 * **replacer.hide_recipe_technic_direct** hide the direct technic recipe (default: 1)
 
-# Contributors
+## Contributors
 
 * Sokomine
 * coil0
@@ -79,8 +82,7 @@ These two require technic to be installed, if not they are hidden no matter how 
 * BuckarooBanzay
 * S-S-X
 
-# License
-
+## License
 
     Copyright (C) 2013,2014,2015 Sokomine
 
